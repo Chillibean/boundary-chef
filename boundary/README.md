@@ -48,4 +48,4 @@ Contributing
 
 License and Authors
 -------------------
-Authors: Amalio Garcia
+Authors: agchillibean
