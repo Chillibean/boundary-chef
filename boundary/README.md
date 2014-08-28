@@ -3,7 +3,7 @@ boundary Cookbook
 TODO: Enter the cookbook description here.
 
 e.g.
-This cookbook makes your favorite breakfast sandwich.
+This cookbook install graphdat-agent and graphdat-relay.
 
 Requirements
 ------------
@@ -11,7 +11,7 @@ TODO: List your cookbook requirements. Be sure to include any requirements this 
 
 e.g.
 #### packages
-- `toaster` - boundary needs toaster to brown your bagel.
+- `nodejs` - boundary needs nodejs.
 
 Attributes
 ----------
