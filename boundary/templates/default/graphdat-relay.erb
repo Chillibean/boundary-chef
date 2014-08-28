@@ -1,0 +1,143 @@
+#!/bin/sh
+ 
+### BEGIN INIT INFO
+# Provides: graphdat-relay
+# Required-Start: $local_fs $remote_fs $network $named
+# Required-Stop: $local_fs $remote_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: start and stop the graphdat-relay
+# Description: The graphdat-relay hosts plugins that send data to graphdat.com
+### END INIT INFO
+ 
+#### CHANGE ME ###
+# Where did you install the graphdat-relay's config files
+CONFIG=/etc/graphdat-relay
+###################
+ 
+#### CHANGE ME ###
+# Where is node installed?  
+# If you have done something custom like use nvm, please update
+# the $NODEPATH instead of using this default
+NODEBIN=$(which node)
+NODEPATH=${NODEBIN%/*}
+###################
+ 
+#### CHANGE ME ###
+# Where is the graphdat-relay installed?  
+# If you have done something custom like use nvm, please update
+# the $DAEMON instead of using this default
+DAEMON=$(which graphdat-relay-daemon)
+###################
+ 
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin:/usr/local/sbin:$NODEPATH
+ 
+# Add $HOME to the ENV so node-gyp plays nicely
+test -z $HOME && export HOME=/root
+ 
+DESC="The graphdat-relay hosts plugins that send data to graphdat.com"
+SCRIPTNAME=/etc/init.d/graphdat-relay
+ 
+# Exit if node is not installed
+if [ ! -x "$NODEBIN" ] && [ ! -L "$NODEBIN" ]; then
+	echo "** Node.js is either not installed or not in your current path"
+	echo "\"\$ which node\" gives back the value: \"$NODEBIN\""
+	echo "-- To install nodejs, please go to http://nodejs.org/"
+	echo "-- If node is installed, please update the \$NODEBIN value in this init script"
+	exit 0
+fi
+ 	
+# Exit if the graphdat-relay is not installed
+if [ ! -x "$DAEMON" ] && [ ! -L "$DAEMON" ]; then
+	echo "** The Graphdat relay was not found in your path"
+	echo "\"\$ which graphdat-relay-daemon\" gives back the value: \"$DAEMON\""
+	echo "-- To install the graphdat relay run \$ sudo npm install graphdat-relay --global"
+	echo "-- If the graphdat-relay is installed, please update the \$DAEMON value in this init script"
+	exit 0
+fi
+ 
+# Exit if the relay directory is not found
+if [ ! -d "$CONFIG" ] && [ ! -L "$CONFIG" ]; then
+	echo "** The Graphdat relay directory was not found"
+	echo "The current CONFIG path is: \"$CONFIG\""
+	echo "-- Please update the \$CONFIG value in this init script"
+	exit 0
+fi
+ 
+# Exit if the relay directory does not contain a configuration file
+if [ ! -f "$CONFIG/config.json" ]; then
+	echo "** The Graphdat relay directory does not contain a configuration file"
+	echo "The config.json file should be located in \"$CONFIG/config.json\""
+	echo "-- To create the config file, please run the following in the $CONFIG directory:"
+	echo "-- \"\$ graphdat-relay -e your-email -t your-api-token\""
+	exit 0
+fi
+ 
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+ 
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
+. /lib/lsb/init-functions
+ 
+do_start()
+{
+	cd $CONFIG && $DAEMON start
+}
+ 
+do_stop()
+{
+	cd $CONFIG && $DAEMON stop
+}
+ 
+do_restart()
+{
+	cd $CONFIG && $DAEMON restart
+}
+ 
+do_status()
+{
+	cd $CONFIG && $DAEMON status
+}
+ 
+case "$1" in
+	start)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+	do_start
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+	stop)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+	do_stop
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+	restart)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Restarting $DESC" "$NAME"
+	do_restart
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+	status)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Getting status of $DESC" "$NAME"
+	do_status
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+	*)
+	#echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
+	echo "Usage: $SCRIPTNAME {start|stop|restart|status}" >&2
+	exit 3
+	;;
+esac
+ 
+exit 0
